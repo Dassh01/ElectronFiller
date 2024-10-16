@@ -5,7 +5,6 @@ def generateElectronConfiguration(numElectrons):
                  ("7p", 6)]
     
     electronConfiguration = []
-    flag = "\nMax electron count exceeded @ " + str(numElectrons) if numElectrons > 118 else ""
     unpairedElectrons = 0
     
     for subshell, capacity in subshells:
@@ -14,17 +13,24 @@ def generateElectronConfiguration(numElectrons):
         electronsInSubshell = min(numElectrons, capacity)
         electronConfiguration.append(f"{subshell}^{electronsInSubshell}")
         numElectrons -= electronsInSubshell
-        if electronsInSubshell % 2 != 0:
-            unpairedElectrons += 1
+        
+        #unpaired electron fix
+        if "s" in subshell:
+            if electronsInSubshell == 1:
+                unpairedElectrons += 1
+        elif "p" in subshell:
+            unpairedElectrons += (3 - electronsInSubshell // 2)
+        elif "d" in subshell:
+            unpairedElectrons += (5 - electronsInSubshell // 2)
+        elif "f" in subshell:
+            unpairedElectrons += (7 - electronsInSubshell // 2)
     
-    print(flag)
-    configuration = "Config = "
-    configuration += " ".join(electronConfiguration)
-
+    configuration = "\nConfig = " + " ".join(electronConfiguration)
     if unpairedElectrons > 0:
-        configuration += f"\nUnpaired electrons: {unpairedElectrons}"
+        configuration += f"\nUnpaired electrons: {unpairedElectrons}\n"
     else:
-        configuration += f"\nAll electrons paired!\n"    
+        configuration += f"\nAll electrons paired!\n"
+    
     return configuration
 
 print("Type -1 to quit")
