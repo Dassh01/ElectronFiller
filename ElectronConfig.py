@@ -27,5 +27,9 @@ def generateElectronConfiguration(numElectrons):
         configuration += f"\nAll electrons paired!\n"    
     return configuration
 
-numElectrons = int(input("Enter the number of electrons: "))
-print(generateElectronConfiguration(numElectrons))
+print("Type -1 to quit")
+while True:
+    numElectrons = int(input("Enter the number of electrons: "))
+    if numElectrons == -1:
+        break
+    print(generateElectronConfiguration(numElectrons))
