@@ -1,4 +1,4 @@
-def generateElectronConfiguration(numElectrons):
+def generateElectronConfiguration(numElectrons,returnAsList=False,nobleGasMode=False):
     """
     Builds standard electron configuration
 
@@ -14,34 +14,46 @@ def generateElectronConfiguration(numElectrons):
                  ("7p", 6)]
     
     electronConfiguration = []
-    unpairedElectrons = 0
-    
+    atomicNumber = numElectrons
     for subshell, capacity in subshells:
         if numElectrons <= 0:
             break
         electronsInSubshell = min(numElectrons, capacity)
         electronConfiguration.append(f"{subshell}^{electronsInSubshell}")
         numElectrons -= electronsInSubshell
-        
-        #unpaired electron fix
-        if "s" in subshell:
-            if electronsInSubshell == 1:
-                unpairedElectrons += 1
-        #note to self - the first number here is the amount of electron holders
-        elif "p" in subshell:
-            unpairedElectrons += (3 - electronsInSubshell // 2)
-        elif "d" in subshell:
-            unpairedElectrons += (5 - electronsInSubshell // 2)
-        elif "f" in subshell:
-            unpairedElectrons += (7 - electronsInSubshell // 2)
-    
-    configuration = "\nConfig = " + " ".join(electronConfiguration)
-    if unpairedElectrons > 0:
-        configuration += f"\nUnpaired electrons: {unpairedElectrons}\n"
+    if nobleGasMode:
+        #This massive if elif chain handles ranges and assigns noble gas notation to the closest noble gas
+        electronConfigurationAsString = " ".join(electronConfiguration)
+        if 2 > atomicNumber:
+            print("nobleGasMode not applicable")
+        elif 10 > atomicNumber > 2 :
+            nobleGas = "[He]"
+            configuration = nobleGasCorrection(electronConfigurationAsString,"1s^2",nobleGas)
+        elif 18 > atomicNumber >= 10:
+            nobleGas = "[Ne]"
+            configuration = nobleGasCorrection(electronConfigurationAsString,"2p^6",nobleGas)
+        elif 36 > atomicNumber >= 18:
+            nobleGas = "[Ar]"
+            configuration = nobleGasCorrection(electronConfigurationAsString,"3p^6",nobleGas)
+        elif 54 > atomicNumber >= 36:
+            nobleGas = "[Kr]"
+            configuration = nobleGasCorrection(electronConfigurationAsString,"4p^6",nobleGas)
+        elif 86 > atomicNumber >= 54:
+            nobleGas = "[Xe]"
+            configuration = nobleGasCorrection(electronConfigurationAsString,"5p^6",nobleGas)
+        elif atomicNumber > 86:
+            nobleGas = "[Rn]"
+            configuration = nobleGasCorrection(electronConfigurationAsString,"6p^6",nobleGas)
+        else:
+            configuration = "Err; no valid electron configuration found"
+            nobleGas = ""
+        return ("Configuration: "+configuration)
     else:
-        configuration += f"\nAll electrons paired!\n"
-    
-    return configuration
+        if returnAsList:
+            return electronConfiguration
+        else:
+            configuration = "\nConfig = " + " ".join(electronConfiguration)
+            return configuration
 
 def nobleGasCorrection(config, specifier, nobleGas):
     """
@@ -61,47 +73,54 @@ def nobleGasCorrection(config, specifier, nobleGas):
         return newConfig
     return "Err; specifier not found"
 
+def unpairAlgorithm(midpoint,electronsInLastSubshell):
+    if midpoint*2 > electronsInLastSubshell > midpoint:
+        unpairedElectrons = electronsInLastSubshell - (electronsInLastSubshell % midpoint) * 2
+    elif electronsInLastSubshell == midpoint*2:
+        return 0
+    else:
+        unpairedElectrons = electronsInLastSubshell
+    return unpairedElectrons
+
+def findUnpairedElectrons(config):
+    unpairedElectrons = 0
+    lastSubshellData = config[-1]
+    electronsInLastSubshell = int(lastSubshellData[-1])
+    
+    if 's' in lastSubshellData:
+        return (electronsInLastSubshell%2)
+        
+    elif 'p' in lastSubshellData:
+        return unpairAlgorithm(3,electronsInLastSubshell)
+    
+    elif 'd' in lastSubshellData:
+        return unpairAlgorithm(5,electronsInLastSubshell)
+    
+    elif 'f' in lastSubshellData:
+        return unpairAlgorithm(7,electronsInLastSubshell)
+    
 #"main" area of code
 print("Input -1 to quit")
 mode = str(input("Noble gas mode? (Y/N): "))
 if mode.lower() == 'y':
     nobleGasMode = True
 else:
-    nobleGasMode = False    
+    nobleGasMode = False
+    
 while True:
-    if nobleGasMode:
-        numElectrons = int(input("Enter the number of electrons present in the atom: "))
-        if numElectrons == -1:
-            break
-        configuration = generateElectronConfiguration(numElectrons)
-        #This massive if elif chain handles ranges and assigns noble gas notation to the closest noble gas
-        if 2 > numElectrons:
-            print("nobleGasMode not applicable")
-        elif 10 > numElectrons > 2 :
-            nobleGas = "[He]"
-            configuration = nobleGasCorrection(configuration,"1s^2",nobleGas)
-        elif 18 > numElectrons >= 10:
-            nobleGas = "[Ne]"
-            configuration = nobleGasCorrection(configuration,"2p^6",nobleGas)
-        elif 36 > numElectrons >= 18:
-            nobleGas = "[Ar]"
-            configuration = nobleGasCorrection(configuration,"3p^6",nobleGas)
-        elif 54 > numElectrons >= 36:
-            nobleGas = "[Kr]"
-            configuration = nobleGasCorrection(configuration,"4p^6",nobleGas)
-        elif 86 > numElectrons >= 54:
-            nobleGas = "[Xe]"
-            configuration = nobleGasCorrection(configuration,"5p^6",nobleGas)
-        elif numElectrons > 86:
-            nobleGas = "[Rn]"
-            configuration = nobleGasCorrection(configuration,"6p^6",nobleGas)
-        else:
-            configuration = "Err; no valid electron configuration found"
-            nobleGas = ""  
-              
-        print(configuration)         
+    
+    numElectrons = int(input("Enter the number of electrons present in the atom: "))
+    unpairedElectrons = findUnpairedElectrons(generateElectronConfiguration(numElectrons,True))
+    
+    if numElectrons == -1:
+        break
+    elif nobleGasMode:
+        configuration = generateElectronConfiguration(numElectrons,False,True)  
+        print(configuration)   
+        print("Unpaired Electrons = "+str(unpairedElectrons))      
     else:    
-        numElectrons = int(input("Enter the number of electrons present in the atom: "))
-        if numElectrons == -1:
-            break
-        print(generateElectronConfiguration(numElectrons))
+        configuration = generateElectronConfiguration(numElectrons)  
+        print(configuration)
+        print("Unpaired Electrons = "+str(unpairedElectrons))
+        
+        
