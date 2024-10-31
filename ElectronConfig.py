@@ -8,6 +8,18 @@ def generateElectronConfiguration(numElectrons,returnAsList=False,nobleGasMode=F
     Returns:
         String: Electron configuration
     """
+    
+    if numElectrons == 24:
+        if nobleGasMode:
+            return "[Ar] 3d^5 4s^1"
+        else:
+            return "1s^2 2s^2 2p^6 3s^2 3p^6 4s^1 3d^5"
+    elif numElectrons == 29:
+        if nobleGasMode:
+            return "[Ar] 3d^10 4s^1"
+        else:
+            return "1s^2 2s^2 2p^6 3s^2 3p^6 4s^1 3d^10"
+        
     subshells = [("1s", 2), ("2s", 2), ("2p", 6), ("3s", 2), ("3p", 6), ("4s", 2), 
                  ("3d", 10), ("4p", 6), ("5s", 2), ("4d", 10), ("5p", 6), ("6s", 2), 
                  ("4f", 14), ("5d", 10), ("6p", 6), ("7s", 2), ("5f", 14), ("6d", 10), 
@@ -83,7 +95,6 @@ def unpairAlgorithm(midpoint,electronsInLastSubshell):
     return unpairedElectrons
 
 def findUnpairedElectrons(config):
-    unpairedElectrons = 0
     lastSubshellData = config[-1]
     electronsInLastSubshell = int(lastSubshellData[-1])
     
@@ -100,7 +111,16 @@ def findUnpairedElectrons(config):
         return unpairAlgorithm(7,electronsInLastSubshell)
     
 #"main" area of code
-print("Input -1 to quit")
+print("""
+/======================================\\
+|| ____                _      ___  _  ||
+|||  _ \  __ _ ___ ___| |__  / _ \/ | ||
+||| | | |/ _` / __/ __| '_ \| | | | | ||
+||| |_| | (_| \__ \__ \ | | | |_| | | ||
+|||____/ \__,_|___/___/_| |_|\___/|_| ||
+\======================================/
+""")
+print("\nInput -1 to quit")
 mode = str(input("Noble gas mode? (Y/N): "))
 if mode.lower() == 'y':
     nobleGasMode = True
